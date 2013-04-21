@@ -65,7 +65,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 	// zの初期化、カウントの初期化
 	z = vector<vector<int>>(M);
 	n_k = vector<int>(K, 0);
-	n_kw = vector<vector<int>>(K, vector<int>(W, 0));
+	n_wk = vector<vector<int>>(W, vector<int>(K, 0));
 	n_jk = vector<vector<int>>(M, vector<int>(K, 0));
 	boost::uniform_int<> uint(0, K-1);
 	for(int j=0; j<M; ++j){
@@ -77,7 +77,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 
 			int w = x[j][i];
 			n_k[k]++;
-			n_kw[k][w]++;
+			n_wk[w][k]++;
 			n_jk[j][k]++;
 		}
 	}
@@ -107,19 +107,19 @@ void LDA::train(const int &iter)
 				int k_old = z[j][i];
 
 				n_k[k_old]--;
-				n_kw[k_old][w]--;
+				n_wk[w][k_old]--;
 				n_jk[j][k_old]--;
 
 				vector<double> p(K);
 				for(int k=0; k<K; ++k){
-					p[k] = (n_jk[j][k] + ALPHA) * (n_kw[k][w] + BETA) / (n_k[k] + W * BETA);
+					p[k] = (n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA);
 				}
 				int k_new = util::multinomialByUnnormalizedParameters(rgen, p);
 				
 				z[j][i] = k_new;
 
 				n_k[k_new]++;
-				n_kw[k_new][w]++;
+				n_wk[w][k_new]++;
 				n_jk[j][k_new]++;
 			}
 		}
@@ -135,7 +135,7 @@ vector<vector<double>> LDA::calc_phi(void)
 	for(int k=0; k<K; ++k){
 		double denomi = n_k[k] + W * BETA;
 		for(int w=0; w<W; ++w){
-			phi[k][w] = (n_kw[k][w] + BETA) / denomi;
+			phi[k][w] = (n_wk[w][k] + BETA) / denomi;
 		}
 	}
 

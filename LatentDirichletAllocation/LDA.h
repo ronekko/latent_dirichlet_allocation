@@ -24,7 +24,7 @@ public:
 	vector<vector<int>> z;
 	vector<int> n_k;
 	vector<vector<int>> n_jk;
-	vector<vector<int>> n_kw;
+	vector<vector<int>> n_wk;
 	boost::mt19937 rgen;
 };
 
