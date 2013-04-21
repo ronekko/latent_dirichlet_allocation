@@ -27,12 +27,18 @@
     <ClInclude Include="utility.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="LDA.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Win32x64UTF8.cpp">
+    <ClCompile Include="LatentDirichletAllocation.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="LDA.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>

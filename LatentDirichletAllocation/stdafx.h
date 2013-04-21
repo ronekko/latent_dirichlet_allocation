@@ -35,6 +35,7 @@
 #include <map>
 #include <utility>
 #include <memory>
+#include <random>
 #include <typeinfo>
 
 #include "direct.h"
@@ -50,6 +51,7 @@
 #include <boost/math/special_functions.hpp>
 #include <boost/random.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/regex.hpp>
 #include <boost/program_options.hpp>
