@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "LDA.h"
+#include "utility.hpp"
 
 using namespace std;
 
@@ -29,19 +30,19 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 		
 		split(tokens, line, is_space());
 		
-		int N = tokens.size();
-		vector<int> words(N);
-		vector<int> counts(N, 0);
+		int L = tokens.size(); // 文書中のユニーク単語数
+		vector<int> words(L);
+		vector<int> counts(L, 0);
 
-		for(int n=0; n<N; ++n){
-			sscanf_s(tokens[n].c_str(), "%d:%d", &(words[n]), &(counts[n]));
+		for(int l=0; l<L; ++l){
+			sscanf_s(tokens[l].c_str(), "%d:%d", &(words[l]), &(counts[l]));
 		}
 
 		int N_j = boost::accumulate(counts, 0);
 		vector<int> x_j(N_j);
-		for(int n=0, i=0; n<N; ++n){
-			int word = words[n];
-			for(int c=0; c<counts[n]; ++c){
+		for(int l=0, i=0; l<L; ++l){
+			int word = words[l];
+			for(int c=0; c<counts[l]; ++c){
 				x_j[i] = word;
 				++i;
 			}
@@ -80,4 +81,102 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 			n_jk[j][k]++;
 		}
 	}
+
+	// パラメタなどの初期化
+	ALPHA = 1.0 / K;
+	BETA = 50.0 / W;
+	N = 0;
+	for(auto &x_j : x){
+		N += x_j.size();
+	}
+}
+
+
+
+void LDA::train(const int &iter)
+{
+	for(int r=0; r<iter; ++r)
+	{
+		boost::timer timer;
+		for(int j=0; j<M; ++j)
+		{
+			int N = x[j].size();
+			for(int i=0; i<N; ++i)
+			{
+				int w = x[j][i];
+				int k_old = z[j][i];
+
+				n_k[k_old]--;
+				n_kw[k_old][w]--;
+				n_jk[j][k_old]--;
+
+				vector<double> p(K);
+				for(int k=0; k<K; ++k){
+					p[k] = (n_jk[j][k] + ALPHA) * (n_kw[k][w] + BETA) / (n_k[k] + W * BETA);
+				}
+				int k_new = util::multinomialByUnnormalizedParameters(rgen, p);
+				
+				z[j][i] = k_new;
+
+				n_k[k_new]++;
+				n_kw[k_new][w]++;
+				n_jk[j][k_new]++;
+			}
+		}
+		cout << r << ":\t" << calc_perplexity() << "(" << timer.elapsed() << ")" << endl;
+	}
+}
+
+
+
+vector<vector<double>> LDA::calc_phi(void)
+{
+	vector<vector<double>> phi(K, vector<double>(W));
+	for(int k=0; k<K; ++k){
+		double denomi = n_k[k] + W * BETA;
+		for(int w=0; w<W; ++w){
+			phi[k][w] = (n_kw[k][w] + BETA) / denomi;
+		}
+	}
+
+	return phi;
+}
+
+
+vector<vector<double>> LDA::calc_theta(void)
+{
+	vector<vector<double>> theta(M, vector<double>(K));
+	for(int j=0; j<M; ++j){
+		double denomi = boost::accumulate(n_jk[j], 0.0) + K * ALPHA;
+		for(int k=0; k<K; ++k){
+			theta[j][k] = (n_jk[j][k] + ALPHA) / denomi;
+		}
+	}
+
+	return theta;
+}
+
+
+double LDA::calc_perplexity(void)
+{
+	vector<vector<double>> phi = calc_phi();
+	vector<vector<double>> theta = calc_theta();
+	double log_sum = 0.0;
+
+	for(int j=0; j<M; ++j)
+	{
+		int N_j = x[j].size();
+		for(int i=0; i<N_j; ++i)
+		{
+			int w = x[j][i];
+			double px = 0.0;
+			for(int k=0; k<K; ++k){
+				px += theta[j][k] * phi[k][w];
+			}
+			log_sum += log(px);
+		}
+	}
+
+	double perplexity = exp(-log_sum / static_cast<double>(N));
+	return perplexity;
 }
