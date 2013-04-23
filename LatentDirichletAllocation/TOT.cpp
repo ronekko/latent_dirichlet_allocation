@@ -45,20 +45,33 @@ TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &fi
 		}
 	}
 
-	// パラメタの初期化
+	// パラメタ、尤度のキャッシュの初期化
 	psi = vector<pair<double, double>>(K, pair<double, double>(1.0, 1.0));
+	
+	beta_likelihood = vector<vector<double>>(M);
+	vector<boost::math::beta_distribution<>> beta_distributions(K);
+	for(int k=0; k<K; ++k){
+		beta_distributions[k] = boost::math::beta_distribution<>(psi[k].first, psi[k].second);
+	}
+#pragma omp parallel for
+	for(int j=0; j<M; ++j){
+		int N_j = t[j].size();
+		beta_likelihood[j] = vector<double>(N_j);
+		for(int i=0; i<N_j; ++i){
+			for(int k=0; k<K; ++k){
+				beta_likelihood[j][i] = boost::math::pdf(beta_distributions[k], t[j][i]);
+			}
+		}
+	}
 }
 
 
 void TOT::train(const int &iter)
 {
+	int interval_beta_update = 10;
 	for(int r=0; r<iter; ++r)
 	{
 		boost::timer timer;
-		vector<boost::math::beta_distribution<>> beta_distributions(K);
-		for(int k=0; k<K; ++k){
-			beta_distributions[k] = boost::math::beta_distribution<>(psi[k].first, psi[k].second);
-		}
 
 		for(int j=0; j<M; ++j)
 		{
@@ -73,10 +86,8 @@ void TOT::train(const int &iter)
 				n_jk[j][k_old]--;
 
 				vector<double> p(K);
-#pragma omp parallel for
 				for(int k=0; k<K; ++k){
-					double beta_likelihood = boost::math::pdf(beta_distributions[k], t[j][i]);
-					p[k] = (n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA) * beta_likelihood;
+					p[k] = (n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA) * beta_likelihood[j][i];
 				}
 				int k_new = util::multinomialByUnnormalizedParameters(rgen, p);
 				
@@ -88,32 +99,49 @@ void TOT::train(const int &iter)
 			}
 		}
 		
-		vector<double> t_mean(K, 0.0);
-		vector<double> t_var(K, 0.0);
-		for(int j=0; j<M; ++j){
-			for(int i=0; i<t[j].size(); ++i){
-				int k = z[j][i];
-				t_mean[k] += t[j][i];
+		// ベータ分布パラメタと尤度の更新（iterがinterval_beta_update回ごとに）
+		if((r % interval_beta_update) == (interval_beta_update - 1)){
+			vector<double> t_mean(K, 0.0);
+			vector<double> t_var(K, 0.0);
+			for(int j=0; j<M; ++j){
+				for(int i=0; i<t[j].size(); ++i){
+					int k = z[j][i];
+					t_mean[k] += t[j][i];
+				}
 			}
-		}
-		for(int k=0; k<K; ++k){
-			t_mean[k] /= static_cast<double>(n_k[k]);
-		}
-		for(int j=0; j<M; ++j){
-			for(int i=0; i<t[j].size(); ++i){
-				int k = z[j][i];
-				t_var[k] += (t[j][i] - t_mean[k]) * (t[j][i] - t_mean[k]);
+			for(int k=0; k<K; ++k){
+				t_mean[k] /= static_cast<double>(n_k[k]);
 			}
-		}
-		for(int k=0; k<K; ++k){
-			// 分散が0になるケースがありえる
-			t_var[k] /= static_cast<double>(n_k[k]);
-			// TOT論文のAppendixの最後、ψを求める式ふたつの第2項（括弧の中）
-			double last_term = t_mean[k] * (1.0 - t_mean[k]) / t_var[k] - 1.0;
-			psi[k].first = t_mean[k] * last_term;
-			psi[k].second = (1.0 - t_mean[k]) * last_term;
+			for(int j=0; j<M; ++j){
+				for(int i=0; i<t[j].size(); ++i){
+					int k = z[j][i];
+					t_var[k] += (t[j][i] - t_mean[k]) * (t[j][i] - t_mean[k]);
+				}
+			}
+			for(int k=0; k<K; ++k){
+				// 分散が0になるケースがありえる
+				t_var[k] /= static_cast<double>(n_k[k]);
+				// TOT論文のAppendixの最後、ψを求める式ふたつの第2項（括弧の中）
+				double last_term = t_mean[k] * (1.0 - t_mean[k]) / t_var[k] - 1.0;
+				psi[k].first = t_mean[k] * last_term;
+				psi[k].second = (1.0 - t_mean[k]) * last_term;
+			}
+		
+			// ベータ分布尤度項の更新
+			vector<boost::math::beta_distribution<>> beta_distributions(K);
+			for(int k=0; k<K; ++k){
+				beta_distributions[k] = boost::math::beta_distribution<>(psi[k].first, psi[k].second);
+			}
+#pragma omp parallel for
+			for(int j=0; j<M; ++j){
+				for(int i=0; i<t[j].size(); ++i){
+					for(int k=0; k<K; ++k){
+						beta_likelihood[j][i] = boost::math::pdf(beta_distributions[k], t[j][i]);
+					}
+				}
+			}
 		}
 
-		cout << r << ":\t" << calc_perplexity() << "(" << timer.elapsed() << ")" << endl;
+		std::cout << r << ":\t" << calc_perplexity() << " (" << timer.elapsed() << "[s])" << endl;
 	}
 }
