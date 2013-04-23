@@ -89,6 +89,14 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 	for(auto &x_j : x){
 		N += x_j.size();
 	}
+
+	//
+	cout << "M = " << M << " (number of documents)" << endl
+		 << "N = " << N << " (number of tokens in the corpus)" << endl
+		 << "W = " << W << " (size of the vocabulary)" << endl
+		 << "K = " << K << " (number of topics)" << endl
+		 << "ƒ¿= " << ALPHA << endl
+		 << "ƒÀ= " << BETA << endl;
 }
 
 

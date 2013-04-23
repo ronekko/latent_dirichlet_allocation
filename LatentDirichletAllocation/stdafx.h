@@ -40,8 +40,8 @@
 
 #include "direct.h"
 
-#include <boost/unordered_set.hpp>
-#include <boost/unordered_map.hpp>
+//#include <boost/unordered_set.hpp>
+//#include <boost/unordered_map.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/range/algorithm_ext.hpp>
 #include <boost/range/numeric.hpp>
@@ -53,14 +53,14 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
-#include <boost/program_options.hpp>
-#include <boost/chrono.hpp>
-#include <boost/serialization/serialization.hpp>
+//#include <boost/regex.hpp>
+//#include <boost/program_options.hpp>
+//#include <boost/chrono.hpp>
 
-#include <boost/archive/text_oarchive.hpp> // テキスト形式アーカイブに書き込み
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
+//#include <boost/serialization/serialization.hpp>
+//#include <boost/archive/text_oarchive.hpp> // テキスト形式アーカイブに書き込み
+//#include <boost/archive/xml_oarchive.hpp>
+//#include <boost/archive/xml_iarchive.hpp>
+//#include <boost/serialization/vector.hpp>
 
 #include <opencv2/opencv.hpp>

@@ -7,8 +7,8 @@ class LDA
 public:
 	LDA(void);
 	LDA(const string &file_bow, const string &file_vocabulary);
-	~LDA(void);
-	void train(const int &iter);
+	virtual ~LDA(void);
+	virtual void train(const int &iter);
 	vector<vector<double>> calc_phi(void);
 	vector<vector<double>> calc_theta(void);
 	double calc_perplexity(void);
