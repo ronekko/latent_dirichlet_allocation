@@ -14,8 +14,8 @@ int _tmain(int argc, _TCHAR* argv[])
 	const string file_timestamp = "NIPS0-12/pclass0-12.txt";
 	//LDA lda(file_bow, file_vocabulary);
 	TOT lda(file_bow, file_vocabulary, file_timestamp);
-
-	lda.train(200);
+	
+	lda.train(2000);
 
 	return 0;
 }

@@ -140,8 +140,32 @@ void TOT::train(const int &iter)
 					}
 				}
 			}
+			
+			// ŠwKŒ‹‰Ê‚Ì•Û‘¶
+			save_model();
 		}
 
 		std::cout << r << ":\t" << calc_perplexity() << " (" << timer.elapsed() << "[s])" << endl;
 	}
+}
+
+
+void TOT::save_psi(const string &file_psi)
+{
+	ofstream ofs(file_psi);
+
+	for(int k=0; k<K; ++k){
+		ofs << k << "\t" << psi[k].first << "\t" << psi[k].second << endl;
+	}
+}
+
+void TOT::save_model(void)
+{
+	const string file_phi = "phi.txt";
+	const string file_theta = "theta.txt";
+	const string file_psi = "psi.txt";
+	
+	save_phi(file_phi, 50);
+	save_theta(file_theta, 10);
+	save_psi(file_psi);
 }

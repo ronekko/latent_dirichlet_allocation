@@ -83,8 +83,8 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 	}
 
 	// ÉpÉâÉÅÉ^Ç»Ç«ÇÃèâä˙âª
-	ALPHA = 1.0 / K;
-	BETA = 50.0 / W;
+	ALPHA = 5.0 / K;
+	BETA = 20.0 / W;
 	N = 0;
 	for(auto &x_j : x){
 		N += x_j.size();
@@ -137,6 +137,7 @@ void LDA::train(const int &iter)
 
 
 
+// phi[K][W]
 vector<vector<double>> LDA::calc_phi(void)
 {
 	vector<vector<double>> phi(K, vector<double>(W));
@@ -151,6 +152,7 @@ vector<vector<double>> LDA::calc_phi(void)
 }
 
 
+// theta[M][K]
 vector<vector<double>> LDA::calc_theta(void)
 {
 	vector<vector<double>> theta(M, vector<double>(K));
@@ -187,4 +189,54 @@ double LDA::calc_perplexity(void)
 
 	double perplexity = exp(-log_sum / static_cast<double>(N));
 	return perplexity;
+}
+
+
+void LDA::save_phi(const string &file_phi, int W_top)
+{
+	if(W_top == 0){ W_top = W; }
+	ofstream ofs(file_phi);
+	auto phi = calc_phi();
+	for(int k=0; k<K; ++k){
+		ofs << k << endl;
+		vector<pair<double, int>> phi_k(W);
+		for(int w=0; w<W; ++w){
+			phi_k[w] = make_pair(phi[k][w], w);
+		}
+
+		boost::sort(phi_k, greater<pair<double, int>>());
+
+		for(int w=0; w<W_top; ++w){
+			ofs << phi_k[w].first << "\t" << vocabulary[phi_k[w].second] << endl;
+		}
+	}
+}
+
+void LDA::save_theta(const string &file_theta, int K_top)
+{
+	if(K_top == 0){ K_top = K; }
+	ofstream ofs(file_theta);
+	auto theta = calc_theta();
+	for(int j=0; j<M; ++j){
+		ofs << j << endl;
+		vector<pair<double, int>> theta_j(K);
+		for(int k=0; k<K; ++k){
+			theta_j[k] = make_pair(theta[j][k], k);
+		}
+
+		boost::sort(theta_j, greater<pair<double, int>>());
+		
+		for(int k=0; k<K; ++k){
+			ofs << theta_j[k].first << "\t" << theta_j[k].second << endl;
+		}
+	}
+}
+
+void LDA::save_model(void)
+{
+	const string file_phi = "phi.txt";
+	const string file_theta = "theta.txt";
+	
+	save_phi(file_phi, 50);
+	save_theta(file_theta, 10);
 }

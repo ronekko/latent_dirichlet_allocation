@@ -12,6 +12,9 @@ public:
 	vector<vector<double>> calc_phi(void);
 	vector<vector<double>> calc_theta(void);
 	double calc_perplexity(void);
+	void save_phi(const string &file_phi, int W_top=0);
+	void save_theta(const string &file_theta, int K_top=0);
+	virtual void save_model(void);
 
 	int M; // number of documents
 	int N; // number of tokens in the corpus
