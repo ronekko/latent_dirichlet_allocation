@@ -167,4 +167,20 @@ inline void test_CRTRandom(void)
 		}
 	}
 }
+
+class BetaDistribution{
+public:
+	BetaDistribution(const double &alpha, const double &beta) : alpha(alpha), beta(beta){
+		using boost::math::tgamma;
+		normalization_term = tgamma(alpha + beta) / (tgamma(alpha) * tgamma(beta));
+	};
+	~BetaDistribution(void){};
+	inline double pdf(double x){
+		return normalization_term * pow(x, alpha-1) * pow(1-x, beta-1);
+	};
+private:
+	const double alpha;
+	const double beta;
+	double normalization_term;
+};
 };

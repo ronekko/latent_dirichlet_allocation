@@ -17,7 +17,7 @@ LDA::~LDA(void)
 LDA::LDA(const string &file_bow, const string &file_vocabulary)
 {
 	rgen.seed(0);
-	K = 50;
+	K = 70;
 
 	// コーパスのカウントファイルのロード
 	ifstream ifs_bow(file_bow);
@@ -83,8 +83,8 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 	}
 
 	// パラメタなどの初期化
-	ALPHA = 5.0 / K;
-	BETA = 20.0 / W;
+	ALPHA = 1.0 / K;
+	BETA = 0.001;
 	N = 0;
 	for(auto &x_j : x){
 		N += x_j.size();

@@ -128,15 +128,18 @@ void TOT::train(const int &iter)
 			}
 		
 			// ベータ分布尤度項の更新
-			vector<boost::math::beta_distribution<>> beta_distributions(K);
+			//vector<boost::math::beta_distribution<>> beta_distributions(K);
+			vector<util::BetaDistribution> beta_distributions;
+			beta_distributions.reserve(K);
 			for(int k=0; k<K; ++k){
-				beta_distributions[k] = boost::math::beta_distribution<>(psi[k].first, psi[k].second);
+				beta_distributions.push_back(util::BetaDistribution(psi[k].first, psi[k].second));
 			}
 #pragma omp parallel for
 			for(int j=0; j<M; ++j){
 				for(int i=0; i<t[j].size(); ++i){
 					for(int k=0; k<K; ++k){
-						beta_likelihood[j][i] = boost::math::pdf(beta_distributions[k], t[j][i]);
+						//beta_likelihood[j][i] = boost::math::pdf(beta_distributions[k], t[j][i]);
+						beta_likelihood[j][i] = beta_distributions[k].pdf(t[j][i]);
 					}
 				}
 			}
