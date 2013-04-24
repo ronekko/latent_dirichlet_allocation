@@ -226,7 +226,7 @@ void LDA::save_theta(const string &file_theta, int K_top)
 
 		boost::sort(theta_j, greater<pair<double, int>>());
 		
-		for(int k=0; k<K; ++k){
+		for(int k=0; k<K_top; ++k){
 			ofs << theta_j[k].first << "\t" << theta_j[k].second << endl;
 		}
 	}
