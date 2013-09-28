@@ -13,6 +13,6 @@ public:
 	
 	vector<vector<double>> t; // timestamp of token[j][i]: [0, 1) normalized
 	vector<pair<double, double>> psi; // psi[k]: トピックKのベータ分布のパラメタ対, Beta(t; psi[k].first, psi[k].second)
-	vector<vector<vector<double>>> beta_likelihood; // t[j][i]ごとのベータ分布尤度の項のキャッシュ 
+	vector<vector<vector<double>>> beta_log_likelihood; // t[j][i]ごとのベータ分布尤度の項のキャッシュ 
 };
 

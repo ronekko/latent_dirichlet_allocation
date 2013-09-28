@@ -171,16 +171,16 @@ inline void test_CRTRandom(void)
 class BetaDistribution{
 public:
 	BetaDistribution(const double &alpha, const double &beta) : alpha(alpha), beta(beta){
-		using boost::math::tgamma;
-		normalization_term = tgamma(alpha + beta) / (tgamma(alpha) * tgamma(beta));
+		using boost::math::lgamma;
+		log_normalization_term = lgamma(alpha + beta) - (lgamma(alpha) + lgamma(beta));
 	};
 	~BetaDistribution(void){};
-	inline double pdf(const double &x){
-		return normalization_term * pow(x, alpha-1) * pow(1-x, beta-1);
+	inline double log_pdf(const double &x){
+		return log_normalization_term + (alpha - 1.0) * log(x) + (beta - 1.0) * log(1.0 - x);
 	};
 private:
 	const double alpha;
 	const double beta;
-	double normalization_term;
+	double log_normalization_term;
 };
 };

@@ -48,7 +48,7 @@ TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &fi
 	// パラメタ、尤度のキャッシュの初期化
 	psi = vector<pair<double, double>>(K, pair<double, double>(1.0, 1.0));
 	
-	beta_likelihood = vector<vector<vector<double>>>(M);
+	beta_log_likelihood = vector<vector<vector<double>>>(M);
 	vector<boost::math::beta_distribution<>> beta_distributions(K);
 	for(int k=0; k<K; ++k){
 		beta_distributions[k] = boost::math::beta_distribution<>(psi[k].first, psi[k].second);
@@ -56,11 +56,11 @@ TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &fi
 #pragma omp parallel for
 	for(int j=0; j<M; ++j){
 		int N_j = t[j].size();
-		beta_likelihood[j] = vector<vector<double>>(N_j);
+		beta_log_likelihood[j] = vector<vector<double>>(N_j);
 		for(int i=0; i<N_j; ++i){
-			beta_likelihood[j][i] = vector<double>(K);
+			beta_log_likelihood[j][i] = vector<double>(K);
 			for(int k=0; k<K; ++k){
-				beta_likelihood[j][i][k] = boost::math::pdf(beta_distributions[k], t[j][i]);
+				beta_log_likelihood[j][i][k] = log(boost::math::pdf(beta_distributions[k], t[j][i]));
 			}
 		}
 	}
@@ -88,9 +88,9 @@ void TOT::train(const int &iter)
 
 				vector<double> p(K);
 				for(int k=0; k<K; ++k){
-					p[k] = (n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA) * beta_likelihood[j][i][k];
+					p[k] = log((n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA)) + beta_log_likelihood[j][i][k];
 				}
-				int k_new = util::multinomialByUnnormalizedParameters(rgen, p);
+				int k_new = util::multinomialByUnnormalizedLogParameters(rgen, p);
 				
 				z[j][i] = k_new;
 
@@ -144,7 +144,7 @@ void TOT::train(const int &iter)
 				for(int i=0; i<t[j].size(); ++i){
 					for(int k=0; k<K; ++k){
 						//beta_likelihood[j][i] = boost::math::pdf(beta_distributions[k], t[j][i]);
-						beta_likelihood[j][i][k] = beta_distributions[k].pdf(t[j][i]);
+						beta_log_likelihood[j][i][k] = beta_distributions[k].log_pdf(t[j][i]);
 					}
 				}
 			}
