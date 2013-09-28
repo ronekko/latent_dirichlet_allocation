@@ -178,9 +178,16 @@ public:
 	inline double log_pdf(const double &x){
 		return log_normalization_term + (alpha - 1.0) * log(x) + (beta - 1.0) * log(1.0 - x);
 	};
+	BetaDistribution& operator=(const BetaDistribution &rhs){
+		this->alpha = rhs.alpha;
+		this->beta = rhs.beta;
+		this->log_normalization_term = rhs.log_normalization_term;
+		return *this;
+	};
+
+	double alpha;
+	double beta;
 private:
-	const double alpha;
-	const double beta;
 	double log_normalization_term;
 };
 };

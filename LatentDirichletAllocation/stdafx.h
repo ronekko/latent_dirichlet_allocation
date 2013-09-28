@@ -64,3 +64,5 @@
 //#include <boost/serialization/vector.hpp>
 
 #include <opencv2/opencv.hpp>
+
+#include "utility.hpp"

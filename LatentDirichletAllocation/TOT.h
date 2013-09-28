@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include "lda.h"
 class TOT :
 	public LDA
@@ -12,7 +13,12 @@ public:
 	void save_model(void);
 	
 	vector<vector<double>> t; // timestamp of token[j][i]: [0, 1) normalized
-	vector<pair<double, double>> psi; // psi[k]: トピックKのベータ分布のパラメタ対, Beta(t; psi[k].first, psi[k].second)
+	vector<util::BetaDistribution> psi; // psi[k]: トピックKのベータ分布のパラメタ対, Beta(t; psi[k].first, psi[k].second)
 	vector<vector<vector<double>>> beta_log_likelihood; // t[j][i]ごとのベータ分布尤度の項のキャッシュ 
+	// ベータ分布推定のoverfitting回避のための仮想サンプル 
+	// 実際のtに加えて[0,1]をT個に等分割したものを用いてpsiを推定する 
+	// Tが大きいほどスムージングが強くかかる 
+	int T;
+	vector<double> t_virtual; 
 };
 

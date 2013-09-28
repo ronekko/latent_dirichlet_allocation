@@ -17,6 +17,7 @@ TOT::~TOT(void)
 TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &file_timestamp)
 		: LDA(file_bow, file_vocabulary)
 {
+	T = 10000;
 	// コーパスのタイムスタンプファイルのロード
 	vector<double> timestamps;
 	timestamps.reserve(M);
@@ -46,13 +47,8 @@ TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &fi
 	}
 
 	// パラメタ、尤度のキャッシュの初期化
-	psi = vector<pair<double, double>>(K, pair<double, double>(1.0, 1.0));
-	
+	psi = vector<util::BetaDistribution>(K, util::BetaDistribution(1.0, 1.0));
 	beta_log_likelihood = vector<vector<vector<double>>>(M);
-	vector<boost::math::beta_distribution<>> beta_distributions(K);
-	for(int k=0; k<K; ++k){
-		beta_distributions[k] = boost::math::beta_distribution<>(psi[k].first, psi[k].second);
-	}
 #pragma omp parallel for
 	for(int j=0; j<M; ++j){
 		int N_j = t[j].size();
@@ -60,16 +56,21 @@ TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &fi
 		for(int i=0; i<N_j; ++i){
 			beta_log_likelihood[j][i] = vector<double>(K);
 			for(int k=0; k<K; ++k){
-				beta_log_likelihood[j][i][k] = log(boost::math::pdf(beta_distributions[k], t[j][i]));
+				beta_log_likelihood[j][i][k] = psi[k].log_pdf(t[j][i]);
 			}
 		}
+	}
+
+	t_virtual = vector<double>(T);
+	for(int i=0; i<T; ++i){
+		t_virtual[i] = i / static_cast<double>(T - 1);
 	}
 }
 
 
 void TOT::train(const int &iter)
 {
-	int interval_beta_update = 10;
+	int interval_beta_update = 1;
 	for(int r=0; r<iter; ++r)
 	{
 		boost::timer timer;
@@ -111,9 +112,9 @@ void TOT::train(const int &iter)
 				}
 			}
 			for(int k=0; k<K; ++k){
-				// スムージングのため仮想的観測として0と1が1回ずつ出たとする
-				t_mean[k] += 0.0 + 1.0;
-				t_mean[k] /= static_cast<double>(n_k[k] + 2);
+				// スムージングつき 
+				t_mean[k] += boost::accumulate(t_virtual, 0.0);
+				t_mean[k] /= static_cast<double>(n_k[k] + T);
 			}
 			for(int j=0; j<M; ++j){
 				for(int i=0; i<t[j].size(); ++i){
@@ -122,29 +123,24 @@ void TOT::train(const int &iter)
 				}
 			}
 			for(int k=0; k<K; ++k){
-				// スムージング
-				t_var[k] += (0.0 - t_mean[k]) * (0.0 - t_mean[k]);
-				t_var[k] += (1.0 - t_mean[k]) * (1.0 - t_mean[k]);
-				t_var[k] /= static_cast<double>(n_k[k] + 2);
+				// スムージングつき
+				for(auto &tv : t_virtual){
+					t_var[k] += (tv - t_mean[k]) * (tv - t_mean[k]);
+				}
+				t_var[k] /= static_cast<double>(n_k[k] + T);
 				// TOT論文のAppendixの最後、ψを求める式ふたつの第2項（括弧の中）
 				double last_term = t_mean[k] * (1.0 - t_mean[k]) / t_var[k] - 1.0;
-				psi[k].first = t_mean[k] * last_term;
-				psi[k].second = (1.0 - t_mean[k]) * last_term;
+				double alpha = t_mean[k] * last_term;
+				double beta = (1.0 - t_mean[k]) * last_term;
+				psi[k] = util::BetaDistribution(alpha, beta);
 			}
 		
 			// ベータ分布尤度項の更新
-			//vector<boost::math::beta_distribution<>> beta_distributions(K);
-			vector<util::BetaDistribution> beta_distributions;
-			beta_distributions.reserve(K);
-			for(int k=0; k<K; ++k){
-				beta_distributions.push_back(util::BetaDistribution(psi[k].first, psi[k].second));
-			}
-#pragma omp parallel for
+			#pragma omp parallel for
 			for(int j=0; j<M; ++j){
 				for(int i=0; i<t[j].size(); ++i){
 					for(int k=0; k<K; ++k){
-						//beta_likelihood[j][i] = boost::math::pdf(beta_distributions[k], t[j][i]);
-						beta_log_likelihood[j][i][k] = beta_distributions[k].log_pdf(t[j][i]);
+						beta_log_likelihood[j][i][k] = psi[k].log_pdf(t[j][i]);
 					}
 				}
 			}
@@ -163,7 +159,7 @@ void TOT::save_psi(const string &file_psi)
 	ofstream ofs(file_psi);
 
 	for(int k=0; k<K; ++k){
-		ofs << k << "\t" << psi[k].first << "\t" << psi[k].second << endl;
+		ofs << k << "\t" << psi[k].alpha << "\t" << psi[k].beta<< endl;
 	}
 }
 
