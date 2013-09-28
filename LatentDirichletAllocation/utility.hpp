@@ -175,7 +175,7 @@ public:
 		normalization_term = tgamma(alpha + beta) / (tgamma(alpha) * tgamma(beta));
 	};
 	~BetaDistribution(void){};
-	inline double pdf(double x){
+	inline double pdf(const double &x){
 		return normalization_term * pow(x, alpha-1) * pow(1-x, beta-1);
 	};
 private:
