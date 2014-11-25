@@ -27,6 +27,6 @@ public:
 	std::vector<int> n_k;
 	std::vector<std::vector<int>> n_jk;
 	std::vector<std::vector<int>> n_wk;
-	boost::mt19937 rgen;
+	boost::mt19937 rng;
 };
 

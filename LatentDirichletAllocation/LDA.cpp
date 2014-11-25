@@ -16,7 +16,7 @@ LDA::~LDA(void)
 
 LDA::LDA(const string &file_bow, const string &file_vocabulary)
 {
-	rgen.seed(0);
+	rng.seed(0);
 	K = 70;
 
 	// コーパスのカウントファイルのロード
@@ -72,7 +72,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 		int N_j = x[j].size();
 		z[j] = vector<int>(N_j);
 		for(int i=0; i<N_j; ++i){
-			int k = uint(rgen);
+			int k = uint(rng);
 			z[j][i] = k;
 
 			int w = x[j][i];
@@ -122,7 +122,7 @@ void LDA::train(const int &iter)
 				for(int k=0; k<K; ++k){
 					p[k] = (n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA);
 				}
-				int k_new = util::multinomialByUnnormalizedParameters(rgen, p);
+				int k_new = util::multinomialByUnnormalizedParameters(rng, p);
 				
 				z[j][i] = k_new;
 

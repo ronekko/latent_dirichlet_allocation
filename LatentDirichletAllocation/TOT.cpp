@@ -91,7 +91,7 @@ void TOT::train(const int &iter)
 				for(int k=0; k<K; ++k){
 					p[k] = log((n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA)) + beta_log_likelihood[j][i][k];
 				}
-				int k_new = util::multinomialByUnnormalizedLogParameters(rgen, p);
+				int k_new = util::multinomialByUnnormalizedLogParameters(rng, p);
 				
 				z[j][i] = k_new;
 
