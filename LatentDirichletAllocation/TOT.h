@@ -4,8 +4,9 @@
 class TOT :
 	public LDA
 {
-public:
+private:
 	TOT(void);
+public:
 	TOT(const std::string &file_bow, const std::string &file_vocabulary, const std::string &file_timestamp);
 	~TOT(void);
 	void train(const int &iter);

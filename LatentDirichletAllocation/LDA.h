@@ -3,8 +3,9 @@
 
 class LDA
 {
-public:
+private:
 	LDA(void);
+public:
 	LDA(const std::string &file_bow, const std::string &file_vocabulary);
 	virtual ~LDA(void);
 	virtual void train(const int &iter);

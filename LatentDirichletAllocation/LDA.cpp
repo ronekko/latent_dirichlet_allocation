@@ -4,10 +4,6 @@
 
 using namespace std;
 
-LDA::LDA(void)
-{
-}
-
 
 LDA::~LDA(void)
 {

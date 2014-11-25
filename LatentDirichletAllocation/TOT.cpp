@@ -5,9 +5,6 @@
 
 using namespace std;
 
-TOT::TOT(void) : LDA()
-{
-}
 
 
 TOT::~TOT(void)
