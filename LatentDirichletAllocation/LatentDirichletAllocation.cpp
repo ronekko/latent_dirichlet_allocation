@@ -13,10 +13,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	const string file_vocabulary = "NIPS0-12/voca0-12.txt";
 	const string file_timestamp = "NIPS0-12/pclass0-12.txt";
 
-	//LDA lda(file_bow, file_vocabulary, 60, 0);
-	TOT lda(file_bow, file_vocabulary, file_timestamp, 60, 0);
+	LDA lda(file_bow, file_vocabulary, 60, 0);
+	//TOT lda(file_bow, file_vocabulary, file_timestamp, 60, 0);
 	
-	lda.train(2000);
+	lda.train(300);
+	lda.save_model("result_phi.txt", "result_theta.txt", 50, 10);
 
 	return 0;
 }
