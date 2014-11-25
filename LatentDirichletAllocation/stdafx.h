@@ -13,18 +13,6 @@
 
 
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
-#ifdef _DEBUG
-	#pragma comment(lib, "opencv_core246d.lib")
-	#pragma comment(lib, "opencv_imgproc246d.lib")
-	#pragma comment(lib, "opencv_highgui246d.lib")
-	#pragma comment(lib, "opencv_features2d246d.lib")
-#else
-	#pragma comment(lib, "opencv_core246.lib")
-	#pragma comment(lib, "opencv_imgproc246.lib")
-	#pragma comment(lib, "opencv_highgui246.lib")
-	#pragma comment(lib, "opencv_features2d246.lib")
-#endif
-
 
 #include <iostream>
 #include <fstream>
