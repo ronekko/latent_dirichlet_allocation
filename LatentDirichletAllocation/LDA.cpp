@@ -232,11 +232,8 @@ void LDA::save_theta(const string &file_theta, int K_top)
 	}
 }
 
-void LDA::save_model(void)
-{
-	const string file_phi = "phi.txt";
-	const string file_theta = "theta.txt";
-	
-	save_phi(file_phi, 50);
-	save_theta(file_theta, 10);
+void LDA::save_model(const std::string &file_phi, const std::string &file_theta, const int &W_top, const int &K_top)
+{	
+	save_phi(file_phi, W_top);
+	save_theta(file_theta, K_top);
 }

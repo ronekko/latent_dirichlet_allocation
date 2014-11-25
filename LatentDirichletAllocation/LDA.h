@@ -13,7 +13,7 @@ public:
 	double calc_perplexity(void);
 	void save_phi(const std::string &file_phi, int W_top = 0);
 	void save_theta(const std::string &file_theta, int K_top = 0);
-	virtual void save_model(void);
+	virtual void save_model(const std::string &file_phi = "phi.txt", const std::string &file_theta = "theta.txt", const int &W_top = 0, const int &K_top = 0);
 
 	int M; // number of documents
 	int N; // number of tokens in the corpus
