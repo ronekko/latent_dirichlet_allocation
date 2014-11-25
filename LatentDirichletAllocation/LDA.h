@@ -6,7 +6,7 @@ class LDA
 private:
 	LDA(void);
 public:
-	LDA(const std::string &file_bow, const std::string &file_vocabulary);
+	LDA(const std::string &file_bow, const std::string &file_vocabulary, const int &K, const int &seed = -1, const double &ALPHA = 0.0, const double &BETA = 0.0);
 	virtual ~LDA(void);
 	virtual void train(const int &iter);
 	std::vector<std::vector<double>> calc_phi(void);

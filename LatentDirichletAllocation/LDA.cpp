@@ -10,10 +10,10 @@ LDA::~LDA(void)
 }
 
 
-LDA::LDA(const string &file_bow, const string &file_vocabulary)
+LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, const int &seed, const double &ALPHA_, const double &BETA_)
+	: K(K_)
 {
-	rng.seed(0);
-	K = 70;
+	rng.seed(seed != -1 ? seed : std::random_device()());
 
 	// コーパスのカウントファイルのロード
 	ifstream ifs_bow(file_bow);
@@ -80,7 +80,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary)
 
 	// パラメタなどの初期化
 	ALPHA = 1.0 / K;
-	BETA = 0.001;
+	BETA = 1.0 / W;
 	N = 0;
 	for(auto &x_j : x){
 		N += x_j.size();
