@@ -23,11 +23,11 @@ public:
 	double ALPHA;
 	double BETA;
 	std::vector<std::string> vocabulary;
-	std::vector<std::vector<int>> x;
-	std::vector<std::vector<int>> z;
-	std::vector<int> n_k;
-	std::vector<std::vector<int>> n_jk;
-	std::vector<std::vector<int>> n_wk;
+	std::vector<std::vector<int>> x;	// x[j][i]: word type of i-th token in j-th document
+	std::vector<std::vector<int>> z;	// z[j][i]: latent topic assignment of i-th token in j-th document
+	std::vector<int> n_k;				// n_k[k] : counts of topic assignments to k-th topic
+	std::vector<std::vector<int>> n_jk; // n_jk[j][k]: counts of topic assignments to k-th topic in j-th document
+	std::vector<std::vector<int>> n_wk; // n_wk[w][k]: counts of word-type w's assigned to k-th topic
 	boost::mt19937 rng;
 };
 

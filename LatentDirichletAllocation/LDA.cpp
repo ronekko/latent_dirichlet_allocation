@@ -16,6 +16,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 	rng.seed(seed != -1 ? seed : std::random_device()());
 
 	// コーパスのカウントファイルのロード
+	// load corpus file which is a collection of bag-of-words' for each document
 	ifstream ifs_bow(file_bow);
 	string line;
 	M = 0;
@@ -26,7 +27,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 		
 		split(tokens, line, is_space());
 		
-		int L = tokens.size(); // 文書中のユニーク単語数
+		int L = tokens.size(); // num of unique word-types in this document
 		vector<int> words(L);
 		vector<int> counts(L, 0);
 
@@ -43,12 +44,12 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 				++i;
 			}
 		}
-		boost::random_shuffle(x_j); // 文書内のトークンの出現順をシャッフルする
+		boost::random_shuffle(x_j); // shuffle the ordering of tokens in j-th document
 		x.push_back(x_j);
 		++M;
 	}
 	
-	// コーパスの語彙のロード
+	// load vocabulary file
 	ifstream ifs_vocabulary(file_vocabulary);
 	W = 0;
 	while(getline(ifs_vocabulary, line))
@@ -58,7 +59,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 		++W;
 	}
 	
-	// zの初期化、カウントの初期化
+	// initialize z and associated counts
 	z = vector<vector<int>>(M);
 	n_k = vector<int>(K, 0);
 	n_wk = vector<vector<int>>(W, vector<int>(K, 0));
@@ -78,7 +79,7 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 		}
 	}
 
-	// パラメタなどの初期化
+	// set hyperparameters
 	ALPHA = 1.0 / K;
 	BETA = 1.0 / W;
 	N = 0;
