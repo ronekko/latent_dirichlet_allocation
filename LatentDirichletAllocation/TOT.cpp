@@ -11,8 +11,8 @@ TOT::~TOT(void)
 {
 }
 
-TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &file_timestamp, const int &K, const int &seed, const double &ALPHA, const double &BETA)
-	: LDA(file_bow, file_vocabulary, K, seed, ALPHA, BETA)
+TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &file_timestamp, const int &K, const int &seed, const double &alpha_total_mass_, const double &beta_total_mass_)
+	: LDA(file_bow, file_vocabulary, K, seed, alpha_total_mass_, beta_total_mass_)
 {
 	T = 10000;
 	// コーパスのタイムスタンプファイルのロード
@@ -86,7 +86,7 @@ void TOT::train(const int &iter)
 
 				vector<double> p(K);
 				for(int k=0; k<K; ++k){
-					p[k] = log((n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA)) + beta_log_likelihood[j][i][k];
+					p[k] = log((n_jk[j][k] + alpha_k) * (n_wk[w][k] + beta_w) / (n_k[k] + W * beta_w)) + beta_log_likelihood[j][i][k];
 				}
 				int k_new = util::multinomialByUnnormalizedLogParameters(rng, p);
 				

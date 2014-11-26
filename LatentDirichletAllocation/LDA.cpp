@@ -10,7 +10,7 @@ LDA::~LDA(void)
 }
 
 
-LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, const int &seed, const double &ALPHA_, const double &BETA_)
+LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, const int &seed, const double &alpha_total_mass_, const double &beta_total_mass_)
 	: K(K_)
 {
 	rng.seed(seed != -1 ? seed : std::random_device()());
@@ -80,8 +80,8 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 	}
 
 	// set hyperparameters
-	ALPHA = 1.0 / K;
-	BETA = 1.0 / W;
+	alpha_k = alpha_total_mass_ / K;
+	beta_w = beta_total_mass_ / W;
 	N = 0;
 	for(auto &x_j : x){
 		N += x_j.size();
@@ -92,8 +92,8 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 		 << "N = " << N << " (number of tokens in the corpus)" << endl
 		 << "W = " << W << " (size of the vocabulary)" << endl
 		 << "K = " << K << " (number of topics)" << endl
-		 << "ƒ¿= " << ALPHA << endl
-		 << "ƒÀ= " << BETA << endl;
+		 << "ƒ¿_k = " << alpha_k << endl
+		 << "ƒÀ_w = " << beta_w << endl;
 }
 
 
@@ -117,7 +117,7 @@ void LDA::train(const int &iter)
 
 				vector<double> p(K);
 				for(int k=0; k<K; ++k){
-					p[k] = (n_jk[j][k] + ALPHA) * (n_wk[w][k] + BETA) / (n_k[k] + W * BETA);
+					p[k] = (n_jk[j][k] + alpha_k) * (n_wk[w][k] + beta_w) / (n_k[k] + W * beta_w);
 				}
 				int k_new = util::multinomialByUnnormalizedParameters(rng, p);
 				
@@ -139,9 +139,9 @@ vector<vector<double>> LDA::calc_phi(void)
 {
 	vector<vector<double>> phi(K, vector<double>(W));
 	for(int k=0; k<K; ++k){
-		double denomi = n_k[k] + W * BETA;
+		double denomi = n_k[k] + W * beta_w;
 		for(int w=0; w<W; ++w){
-			phi[k][w] = (n_wk[w][k] + BETA) / denomi;
+			phi[k][w] = (n_wk[w][k] + beta_w) / denomi;
 		}
 	}
 
@@ -154,9 +154,9 @@ vector<vector<double>> LDA::calc_theta(void)
 {
 	vector<vector<double>> theta(M, vector<double>(K));
 	for(int j=0; j<M; ++j){
-		double denomi = boost::accumulate(n_jk[j], 0.0) + K * ALPHA;
+		double denomi = boost::accumulate(n_jk[j], 0.0) + K * alpha_k;
 		for(int k=0; k<K; ++k){
-			theta[j][k] = (n_jk[j][k] + ALPHA) / denomi;
+			theta[j][k] = (n_jk[j][k] + alpha_k) / denomi;
 		}
 	}
 

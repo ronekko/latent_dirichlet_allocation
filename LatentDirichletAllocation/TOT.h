@@ -7,7 +7,7 @@ class TOT :
 private:
 	TOT(void);
 public:
-	TOT(const std::string &file_bow, const std::string &file_vocabulary, const std::string &file_timestamp, const int &K, const int &seed = -1, const double &ALPHA = 0.0, const double &BETA = 0.0);
+	TOT(const std::string &file_bow, const std::string &file_vocabulary, const std::string &file_timestamp, const int &K, const int &seed = -1, const double &alpha_total_mass_ = 1.0, const double &beta_total_mass_ = 20.0);
 	~TOT(void);
 	void train(const int &iter);
 	void save_psi(const std::string &file_psi);

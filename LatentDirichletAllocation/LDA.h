@@ -6,7 +6,7 @@ class LDA
 private:
 	LDA(void);
 public:
-	LDA(const std::string &file_bow, const std::string &file_vocabulary, const int &K, const int &seed = -1, const double &ALPHA = 0.0, const double &BETA = 0.0);
+	LDA(const std::string &file_bow, const std::string &file_vocabulary, const int &K, const int &seed = -1, const double &alpha_total_mass_ = 1.0, const double &beta_total_mass_ = 20.0);
 	virtual ~LDA(void);
 	virtual void train(const int &iter);
 	std::vector<std::vector<double>> calc_phi(void);
@@ -20,8 +20,8 @@ public:
 	int N; // number of tokens in the corpus
 	int K; // number of topics
 	int W; // size of vocabulary
-	double ALPHA;
-	double BETA;
+	double alpha_k; // concentration parameter of symmetric Dir(\theta_j ; alphla_1,...,alpha_K)
+	double beta_w;	// concentration parameter of symmetric Dir(\phi_k ; beta_1,...,beta_K)
 	std::vector<std::string> vocabulary;
 	std::vector<std::vector<int>> x;	// x[j][i]: word type of i-th token in j-th document
 	std::vector<std::vector<int>> z;	// z[j][i]: latent topic assignment of i-th token in j-th document
