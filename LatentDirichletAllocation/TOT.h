@@ -1,3 +1,7 @@
+// An experimental implementation of
+// "Topics over time: a non-Markov continuous-time model of topical trends."
+// Wang, Xuerui, and Andrew McCallum, SIGKDD, 2006.
+
 #pragma once
 #include "stdafx.h"
 #include "lda.h"

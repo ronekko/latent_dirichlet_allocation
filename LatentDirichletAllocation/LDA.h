@@ -1,3 +1,6 @@
+// An implementation of latent Dirichlet allocation (LDA) based on collapsed Gibbs sampling.
+// "Finding scientific topics.", Griffiths, Thomas L. and Mark Steyvers, PNAS 2004. 
+
 #include "stdafx.h"
 #pragma once
 
