@@ -9,9 +9,14 @@ class LDA
 private:
 	LDA(void);
 public:
-	LDA(const int &K, const int &seed = -1, const double &alpha_total_mass_ = 1.0, const double &beta_total_mass_ = 20.0);
+	enum Method{
+		CGS // collapsed Gibbs sampling
+	};
+	
+	LDA(const int &K_, const double &alpha_total_mass_ = 1.0, const double &beta_total_mass_ = 20.0, int n_iter_ = 500, LDA::Method method_ = LDA::CGS, const int &seed = -1);
 	virtual ~LDA(void);
 	void fit(std::vector<std::unordered_map<int, int>> bows);
+	virtual void train_by_CGS(const int &iter);
 	std::vector<std::vector<double>> calc_phi(void);
 	std::vector<std::vector<double>> calc_theta(void);
 	double calc_perplexity(void);
@@ -28,6 +33,8 @@ public:
 	double beta_w;	// concentration parameter of symmetric Dir(\phi_k ; beta_1,...,beta_K)
 	double alpha_total_mass; // K * alpha_k
 	double beta_total_mass;  // W * beta_w 
+	int n_iter;
+	Method method;
 	std::vector<std::string> vocabulary;
 	std::vector<std::vector<int>> x;	// x[j][i]: word type of i-th token in j-th document
 	std::vector<std::vector<int>> z;	// z[j][i]: latent topic assignment of i-th token in j-th document

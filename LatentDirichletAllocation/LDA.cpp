@@ -10,14 +10,12 @@ LDA::~LDA(void)
 }
 
 
-LDA::LDA(const int &K_, const int &seed, const double &alpha_total_mass_, const double &beta_total_mass_)
-	: K(K_), alpha_total_mass(alpha_total_mass_), beta_total_mass(beta_total_mass_)
+LDA::LDA(const int &K_, const double &alpha_total_mass_, const double &beta_total_mass_, int n_iter_, enum Method method_, const int &seed)
+	: K(K_), alpha_total_mass(alpha_total_mass_), beta_total_mass(beta_total_mass_), n_iter(n_iter_), method(method_)
 {
 	rng.seed(seed != -1 ? seed : std::random_device()());
 }
 
-	// ƒR[ƒpƒX‚ÌƒJƒEƒ“ƒgƒtƒ@ƒCƒ‹‚Ìƒ[ƒh
-	// load corpus file which is a collection of bag-of-words' for each document
 
 void LDA::fit(vector<std::unordered_map<int, int>> bows)
 {
@@ -78,15 +76,18 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 		 << "N = " << N << " (number of tokens in the corpus)" << endl
 		 << "W = " << W << " (size of the vocabulary)" << endl
 		 << "K = " << K << " (number of topics)" << endl
-		 << "ƒ¿_k = " << alpha_k << endl
-		 << "ƒÀ_w = " << beta_w << endl;
+		 << "alpha_k = " << alpha_k << endl
+		 << "beta_w = " << beta_w << endl;
+
+	switch (method){
+	case Method::CGS: train_by_CGS(n_iter); break;
+	}
 }
 
 
-
-void LDA::train(const int &iter)
+void LDA::train_by_CGS(const int &n_iter)
 {
-	for(int r=0; r<iter; ++r)
+	for(int r=0; r<n_iter; ++r)
 	{
 		boost::timer timer;
 		for(int j=0; j<M; ++j)
@@ -219,9 +220,11 @@ void LDA::save_model(const std::string &file_phi, const std::string &file_theta,
 {	
 	save_phi(file_phi, W_top);
 	save_theta(file_theta, K_top);
-}std::vector<std::unordered_map<int, int>> LDA::load_bow_file(const std::string &file_bow)
+}
+
+
+std::vector<std::unordered_map<int, int>> LDA::load_bow_file(const std::string &file_bow)
 {
-	// ï¿½Rï¿½[ï¿½pï¿½Xï¿½ÌƒJï¿½Eï¿½ï¿½ï¿½gï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Ìƒï¿½ï¿½[ï¿½h
 	// load corpus file which is a collection of bag-of-words' for each document
 	std::vector<std::unordered_map<int, int>> bows;
 	ifstream ifs_bow(file_bow);
