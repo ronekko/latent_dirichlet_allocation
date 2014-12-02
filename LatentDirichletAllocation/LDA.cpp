@@ -219,4 +219,25 @@ void LDA::save_model(const std::string &file_phi, const std::string &file_theta,
 {	
 	save_phi(file_phi, W_top);
 	save_theta(file_theta, K_top);
+}std::vector<std::unordered_map<int, int>> LDA::load_bow_file(const std::string &file_bow)
+{
+	// �R�[�p�X�̃J�E���g�t�@�C���̃��[�h
+	// load corpus file which is a collection of bag-of-words' for each document
+	std::vector<std::unordered_map<int, int>> bows;
+	ifstream ifs_bow(file_bow);
+	string line;
+	while (getline(ifs_bow, line))
+	{
+		vector<string> tokens;
+		boost::algorithm::split(tokens, line, boost::algorithm::is_space());
+
+		std::unordered_map<int, int> word_count_map;
+		for (string &token : tokens){
+			int word, count;
+			sscanf_s(token.c_str(), "%d:%d", &word, &count);
+			word_count_map[word] = count;
+		}
+		bows.push_back(word_count_map);
+	}
+	return bows;
 }
