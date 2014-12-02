@@ -20,9 +20,9 @@ public:
 	std::vector<std::vector<double>> calc_phi(void);
 	std::vector<std::vector<double>> calc_theta(void);
 	double calc_perplexity(void);
-	void save_phi(const std::string &file_phi, int W_top = 0);
+	void save_phi(const std::string &file_phi, int W_top = 0, const std::string &file_vicabulary = "");
 	void save_theta(const std::string &file_theta, int K_top = 0);
-	virtual void save_model(const std::string &file_phi = "phi.txt", const std::string &file_theta = "theta.txt", const int &W_top = 0, const int &K_top = 0);
+	virtual void save_model(const std::string &file_phi = "phi.txt", const std::string &file_theta = "theta.txt", const int &W_top = 0, const int &K_top = 0, const std::string &file_vocabulary = "");
 	static std::vector<std::unordered_map<int, int>> load_bow_file(const std::string &file_bow);
 
 	int M; // number of documents
@@ -35,7 +35,6 @@ public:
 	double beta_total_mass;  // W * beta_w 
 	int n_iter;
 	Method method;
-	std::vector<std::string> vocabulary;
 	std::vector<std::vector<int>> x;	// x[j][i]: word type of i-th token in j-th document
 	std::vector<std::vector<int>> z;	// z[j][i]: latent topic assignment of i-th token in j-th document
 	std::vector<int> n_k;				// n_k[k] : counts of topic assignments to k-th topic

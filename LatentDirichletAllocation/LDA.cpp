@@ -176,9 +176,27 @@ double LDA::calc_perplexity(void)
 }
 
 
-void LDA::save_phi(const string &file_phi, int W_top)
+void LDA::save_phi(const string &file_phi, int W_top, const string &file_vocabulary)
 {
 	if(W_top == 0){ W_top = W; }
+	cout << "file_vocabulary: (" << file_vocabulary << ")" << endl;
+
+	vector<string> vocabulary;
+	if (!file_vocabulary.empty()){
+		ifstream ifs(file_vocabulary);
+		string line;
+		while (getline(ifs, line)){
+			vocabulary.push_back(line);
+		}
+		assert(W == vocabulary.size());
+	}
+	else{
+		vocabulary.resize(W);
+		for (int w = 0; w < W; ++w){
+			vocabulary[w] = boost::lexical_cast<string>(w);
+		}
+	}
+
 	ofstream ofs(file_phi);
 	auto phi = calc_phi();
 	for(int k=0; k<K; ++k){
@@ -194,6 +212,7 @@ void LDA::save_phi(const string &file_phi, int W_top)
 			ofs << phi_k[w].first << "\t" << vocabulary[phi_k[w].second] << endl;
 		}
 	}
+	cout << "phi is saved in [" << file_phi << "]" << endl;
 }
 
 void LDA::save_theta(const string &file_theta, int K_top)
@@ -214,11 +233,12 @@ void LDA::save_theta(const string &file_theta, int K_top)
 			ofs << theta_j[k].first << "\t" << theta_j[k].second << endl;
 		}
 	}
+	cout << "theta is saved in [" << file_theta << "]" << endl;
 }
 
-void LDA::save_model(const std::string &file_phi, const std::string &file_theta, const int &W_top, const int &K_top)
+void LDA::save_model(const std::string &file_phi, const std::string &file_theta, const int &W_top, const int &K_top, const std::string &file_vocabulary)
 {	
-	save_phi(file_phi, W_top);
+	save_phi(file_phi, W_top, file_vocabulary);
 	save_theta(file_theta, K_top);
 }
 

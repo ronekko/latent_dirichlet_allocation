@@ -19,7 +19,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	vector<std::unordered_map<int, int>> bows = LDA::load_bow_file(file_bow);
 	lda.fit(bows);
 	
-	lda.save_model("result_phi.txt", "result_theta.txt", 50, 10);
+	lda.save_model("result_phi.txt", "result_theta.txt", 50, 10, file_vocabulary);
 
 	return 0;
 }
