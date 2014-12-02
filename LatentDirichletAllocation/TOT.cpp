@@ -12,7 +12,7 @@ TOT::~TOT(void)
 }
 
 TOT::TOT(const string &file_bow, const string &file_vocabulary, const string &file_timestamp, const int &K, const int &seed, const double &alpha_total_mass_, const double &beta_total_mass_)
-	: LDA(file_bow, file_vocabulary, K, seed, alpha_total_mass_, beta_total_mass_)
+	: LDA(K, seed, alpha_total_mass_, beta_total_mass_)
 {
 	T = 10000;
 	// コーパスのタイムスタンプファイルのロード

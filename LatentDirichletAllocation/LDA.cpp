@@ -10,55 +10,41 @@ LDA::~LDA(void)
 }
 
 
-LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, const int &seed, const double &alpha_total_mass_, const double &beta_total_mass_)
-	: K(K_)
+LDA::LDA(const int &K_, const int &seed, const double &alpha_total_mass_, const double &beta_total_mass_)
+	: K(K_), alpha_total_mass(alpha_total_mass_), beta_total_mass(beta_total_mass_)
 {
 	rng.seed(seed != -1 ? seed : std::random_device()());
+}
 
 	// コーパスのカウントファイルのロード
 	// load corpus file which is a collection of bag-of-words' for each document
-	ifstream ifs_bow(file_bow);
-	string line;
-	M = 0;
-	while(getline(ifs_bow, line))
-	{
-		using namespace boost::algorithm;
-		vector<string> tokens;
-		
-		split(tokens, line, is_space());
-		
-		int L = tokens.size(); // num of unique word-types in this document
-		vector<int> words(L);
-		vector<int> counts(L, 0);
 
-		for(int l=0; l<L; ++l){
-			sscanf_s(tokens[l].c_str(), "%d:%d", &(words[l]), &(counts[l]));
-		}
+void LDA::fit(vector<std::unordered_map<int, int>> bows)
+{
+	M = bows.size();
+	// W is the vocabulary's size since accumulate function calculates the biggest key in keys in all unordered_maps in the vector
+	W = 1 + boost::accumulate(bows, 0, [](int current_max, const unordered_map<int, int> &bow){
+		return max(current_max, (*boost::max_element(bow)).first);
+	});
 
-		int N_j = boost::accumulate(counts, 0);
-		vector<int> x_j(N_j);
-		for(int l=0, i=0; l<L; ++l){
-			int word = words[l];
-			for(int c=0; c<counts[l]; ++c){
-				x_j[i] = word;
-				++i;
+	// The "bow" object (counts of wordtypes) is converted into a sequence of word tokens (x_j object).
+	// For example, bow:{(0, 2), (1, 3), (3, 2)} -> x_j:{0, 0, 1, 1, 1, 3, 3}
+	for (const auto &bow : bows){
+		int N_j = boost::accumulate(bow, 0, [](int sum, const pair<int, int> &type_to_count){
+			return sum + type_to_count.first;
+		});
+		vector<int> x_j;
+		for (const auto &type_count : bow){
+			int word_type = type_count.first;
+			int word_count = type_count.second;
+			for (int c = 0; c < word_count; ++c){
+				x_j.push_back(word_type);
 			}
 		}
 		boost::random_shuffle(x_j); // shuffle the ordering of tokens in j-th document
 		x.push_back(x_j);
-		++M;
 	}
-	
-	// load vocabulary file
-	ifstream ifs_vocabulary(file_vocabulary);
-	W = 0;
-	while(getline(ifs_vocabulary, line))
-	{
-		boost::algorithm::trim(line);
-		vocabulary.push_back(line);
-		++W;
-	}
-	
+
 	// initialize z and associated counts
 	z = vector<vector<int>>(M);
 	n_k = vector<int>(K, 0);
@@ -80,8 +66,8 @@ LDA::LDA(const string &file_bow, const string &file_vocabulary, const int &K_, c
 	}
 
 	// set hyperparameters
-	alpha_k = alpha_total_mass_ / K;
-	beta_w = beta_total_mass_ / W;
+	alpha_k = alpha_total_mass / K;
+	beta_w = beta_total_mass / W;
 	N = 0;
 	for(auto &x_j : x){
 		N += x_j.size();
