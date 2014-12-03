@@ -1,5 +1,6 @@
-// An implementation of latent Dirichlet allocation (LDA) based on collapsed Gibbs sampling.
-// "Finding scientific topics.", Griffiths, Thomas L. and Mark Steyvers, PNAS 2004. 
+// An implementation of latent Dirichlet allocation (LDA) with some learning methods.
+// CGS in "Finding scientific topics.", Griffiths, Thomas L. and Mark Steyvers, PNAS 2004. 
+// CVB0 in "On Smoothing and Inference for Topic Models", Asuncion, Welling, Smith and Teh, UAI 2009.
 
 #include "stdafx.h"
 #pragma once
