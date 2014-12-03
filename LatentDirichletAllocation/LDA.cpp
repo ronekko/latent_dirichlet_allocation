@@ -27,12 +27,14 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 
 	// The "bow" object (counts of wordtypes) is converted into a sequence of word tokens (x_j object).
 	// For example, bow:{(0, 2), (1, 3), (3, 2)} -> x_j:{0, 0, 1, 1, 1, 3, 3}
-	for (const auto &bow : bows){
+	for (const auto &bow : bows)
+	{
 		int N_j = boost::accumulate(bow, 0, [](int sum, const pair<int, int> &type_to_count){
 			return sum + type_to_count.first;
 		});
 		vector<int> x_j;
-		for (const auto &type_count : bow){
+		for (const auto &type_count : bow)
+		{
 			int word_type = type_count.first;
 			int word_count = type_count.second;
 			for (int c = 0; c < word_count; ++c){
@@ -49,10 +51,12 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 	n_wk = vector<vector<double>>(W, vector<double>(K, 0.0));
 	n_jk = vector<vector<double>>(M, vector<double>(K, 0.0));
 	boost::uniform_int<> uint(0, K-1);
-	for(int j=0; j<M; ++j){
+	for (int j = 0; j < M; ++j)
+	{
 		int N_j = x[j].size();
 		z[j] = vector<int>(N_j);
-		for(int i=0; i<N_j; ++i){
+		for (int i = 0; i < N_j; ++i)
+		{
 			int k = uint(rng);
 			z[j][i] = k;
 
@@ -80,7 +84,7 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 		 << "beta_w = " << beta_w << endl;
 
 	switch (method){
-	case Method::CGS: train_by_CGS(n_iter); break;
+	case Method::CGS : train_by_CGS(n_iter); break;
 	case Method::CVB0: train_by_CVB0(n_iter); break;
 	}
 }
@@ -88,13 +92,13 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 
 void LDA::train_by_CGS(const int &n_iter)
 {
-	for(int r=0; r<n_iter; ++r)
+	for (int r = 0; r < n_iter; ++r)
 	{
 		boost::timer timer;
-		for(int j=0; j<M; ++j)
+		for (int j = 0; j < M; ++j)
 		{
 			int N = x[j].size();
-			for(int i=0; i<N; ++i)
+			for (int i = 0; i < N; ++i)
 			{
 				int w = x[j][i];
 				int k_old = z[j][i];
@@ -104,7 +108,7 @@ void LDA::train_by_CGS(const int &n_iter)
 				n_jk[j][k_old]--;
 
 				vector<double> p(K);
-				for(int k=0; k<K; ++k){
+				for (int k = 0; k < K; ++k){
 					p[k] = (n_jk[j][k] + alpha_k) * (n_wk[w][k] + beta_w) / (n_k[k] + W * beta_w);
 				}
 				int k_new = util::multinomialByUnnormalizedParameters(rng, p);
@@ -125,16 +129,18 @@ void LDA::train_by_CGS(const int &n_iter)
 void LDA::train_by_CVB0(const int &n_iter)
 {
 	vector<vector<vector<double>>> qz(M);
-	for (int j = 0; j < M; j++){
+	for (int j = 0; j < M; j++)
+	{
 		int N_j = x[j].size();
 		qz[j] = vector<vector<double>>(N_j, vector<double>(K, 0.0));
-		for (int i = 0; i < N_j; ++i){
+		for (int i = 0; i < N_j; ++i)
+		{
 			int k = z[j][i];
 			qz[j][i][k] = 1.0;
 		}
 	}
 
-	for (int r = 0; r<n_iter; ++r)
+	for (int r = 0; r < n_iter; ++r)
 	{
 		boost::timer timer;
 
@@ -147,13 +153,14 @@ void LDA::train_by_CVB0(const int &n_iter)
 			boost::fill(n_w, 0.0);
 		}
 		// recalculate counts
-		for (int j = 0; j<M; ++j)
+		for (int j = 0; j < M; ++j)
 		{
 			int N_j = x[j].size();
-			for (int i = 0; i<N_j; ++i)
+			for (int i = 0; i < N_j; ++i)
 			{
 				int w = x[j][i];
-				for (int k = 0; k<K; ++k){
+				for (int k = 0; k < K; ++k)
+				{
 					n_k[k] += qz[j][i][k];
 					n_wk[w][k] += qz[j][i][k];
 					n_jk[j][k] += qz[j][i][k];
@@ -162,15 +169,16 @@ void LDA::train_by_CVB0(const int &n_iter)
 		}
 
 		// update qz
-		for (int j = 0; j<M; ++j)
+		for (int j = 0; j < M; ++j)
 		{
 			int N = x[j].size();
-			for (int i = 0; i<N; ++i)
+			for (int i = 0; i < N; ++i)
 			{
 				int w = x[j][i];
 				double sum = 0.0;
 				vector<double> p(K);
-				for (int k = 0; k<K; ++k){
+				for (int k = 0; k < K; ++k)
+				{
 					double &qz_jik = qz[j][i][k];
 					p[k] = (n_jk[j][k] - qz_jik + alpha_k) * (n_wk[w][k] - qz_jik + beta_w) / (n_k[k] - 1.0 + W * beta_w); // -1.0 == -\sum_k{qz[j][i][k]}
 					sum += p[k];
@@ -190,9 +198,10 @@ void LDA::train_by_CVB0(const int &n_iter)
 vector<vector<double>> LDA::calc_phi(void)
 {
 	vector<vector<double>> phi(K, vector<double>(W));
-	for(int k=0; k<K; ++k){
+	for (int k = 0; k < K; ++k)
+	{
 		double denomi = n_k[k] + W * beta_w;
-		for(int w=0; w<W; ++w){
+		for (int w = 0; w < W; ++w){
 			phi[k][w] = (n_wk[w][k] + beta_w) / denomi;
 		}
 	}
@@ -205,9 +214,10 @@ vector<vector<double>> LDA::calc_phi(void)
 vector<vector<double>> LDA::calc_theta(void)
 {
 	vector<vector<double>> theta(M, vector<double>(K));
-	for(int j=0; j<M; ++j){
+	for (int j = 0; j < M; ++j)
+	{
 		double denomi = boost::accumulate(n_jk[j], 0.0) + K * alpha_k;
-		for(int k=0; k<K; ++k){
+		for (int k = 0; k < K; ++k){
 			theta[j][k] = (n_jk[j][k] + alpha_k) / denomi;
 		}
 	}
@@ -222,14 +232,14 @@ double LDA::calc_perplexity(void)
 	vector<vector<double>> theta = calc_theta();
 	double log_sum = 0.0;
 
-	for(int j=0; j<M; ++j)
+	for (int j = 0; j < M; ++j)
 	{
 		int N_j = x[j].size();
-		for(int i=0; i<N_j; ++i)
+		for (int i = 0; i < N_j; ++i)
 		{
 			int w = x[j][i];
 			double px = 0.0;
-			for(int k=0; k<K; ++k){
+			for (int k = 0; k < K; ++k){
 				px += theta[j][k] * phi[k][w];
 			}
 			log_sum += log(px);
@@ -243,7 +253,7 @@ double LDA::calc_perplexity(void)
 
 void LDA::save_phi(const string &file_phi, int W_top, const string &file_vocabulary)
 {
-	if(W_top == 0){ W_top = W; }
+	if (W_top == 0){ W_top = W; }
 	cout << "file_vocabulary: (" << file_vocabulary << ")" << endl;
 
 	vector<string> vocabulary;
@@ -264,16 +274,17 @@ void LDA::save_phi(const string &file_phi, int W_top, const string &file_vocabul
 
 	ofstream ofs(file_phi);
 	auto phi = calc_phi();
-	for(int k=0; k<K; ++k){
+	for (int k = 0; k < K; ++k)
+	{
 		ofs << k << endl;
 		vector<pair<double, int>> phi_k(W);
-		for(int w=0; w<W; ++w){
+		for (int w = 0; w < W; ++w){
 			phi_k[w] = make_pair(phi[k][w], w);
 		}
 
 		boost::sort(phi_k, greater<pair<double, int>>());
 
-		for(int w=0; w<W_top; ++w){
+		for (int w = 0; w < W_top; ++w){
 			ofs << phi_k[w].first << "\t" << vocabulary[phi_k[w].second] << endl;
 		}
 	}
@@ -282,19 +293,21 @@ void LDA::save_phi(const string &file_phi, int W_top, const string &file_vocabul
 
 void LDA::save_theta(const string &file_theta, int K_top)
 {
-	if(K_top == 0){ K_top = K; }
+	if (K_top == 0){ K_top = K; }
+
 	ofstream ofs(file_theta);
 	auto theta = calc_theta();
-	for(int j=0; j<M; ++j){
+	for (int j = 0; j < M; ++j)
+	{
 		ofs << j << endl;
 		vector<pair<double, int>> theta_j(K);
-		for(int k=0; k<K; ++k){
+		for (int k = 0; k < K; ++k){
 			theta_j[k] = make_pair(theta[j][k], k);
 		}
 
 		boost::sort(theta_j, greater<pair<double, int>>());
 		
-		for(int k=0; k<K_top; ++k){
+		for (int k = 0; k < K_top; ++k){
 			ofs << theta_j[k].first << "\t" << theta_j[k].second << endl;
 		}
 	}
@@ -320,7 +333,8 @@ std::vector<std::unordered_map<int, int>> LDA::load_bow_file(const std::string &
 		boost::algorithm::split(tokens, line, boost::algorithm::is_space());
 
 		std::unordered_map<int, int> word_count_map;
-		for (string &token : tokens){
+		for (string &token : tokens)
+		{
 			int word, count;
 			sscanf_s(token.c_str(), "%d:%d", &word, &count);
 			word_count_map[word] = count;
