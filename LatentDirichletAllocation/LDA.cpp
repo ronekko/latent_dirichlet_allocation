@@ -45,9 +45,9 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 
 	// initialize z and associated counts
 	z = vector<vector<int>>(M);
-	n_k = vector<int>(K, 0);
-	n_wk = vector<vector<int>>(W, vector<int>(K, 0));
-	n_jk = vector<vector<int>>(M, vector<int>(K, 0));
+	n_k = vector<double>(K, 0.0);
+	n_wk = vector<vector<double>>(W, vector<double>(K, 0.0));
+	n_jk = vector<vector<double>>(M, vector<double>(K, 0.0));
 	boost::uniform_int<> uint(0, K-1);
 	for(int j=0; j<M; ++j){
 		int N_j = x[j].size();
@@ -81,6 +81,7 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 
 	switch (method){
 	case Method::CGS: train_by_CGS(n_iter); break;
+	case Method::CVB0: train_by_CVB0(n_iter); break;
 	}
 }
 
@@ -113,6 +114,70 @@ void LDA::train_by_CGS(const int &n_iter)
 				n_k[k_new]++;
 				n_wk[w][k_new]++;
 				n_jk[j][k_new]++;
+			}
+		}
+		cout << r << ":\t" << calc_perplexity() << "(" << timer.elapsed() << ")" << endl;
+	}
+}
+
+
+
+void LDA::train_by_CVB0(const int &n_iter)
+{
+	vector<vector<vector<double>>> qz(M);
+	for (int j = 0; j < M; j++){
+		int N_j = x[j].size();
+		qz[j] = vector<vector<double>>(N_j, vector<double>(K, 0.0));
+		for (int i = 0; i < N_j; ++i){
+			int k = z[j][i];
+			qz[j][i][k] = 1.0;
+		}
+	}
+
+	for (int r = 0; r<n_iter; ++r)
+	{
+		boost::timer timer;
+
+		// clear all coutns by 0
+		boost::fill(n_k, 0.0);
+		for (auto &n_j : n_jk){
+			boost::fill(n_j, 0.0);
+		}
+		for (auto &n_w : n_wk){
+			boost::fill(n_w, 0.0);
+		}
+		// recalculate counts
+		for (int j = 0; j<M; ++j)
+		{
+			int N_j = x[j].size();
+			for (int i = 0; i<N_j; ++i)
+			{
+				int w = x[j][i];
+				for (int k = 0; k<K; ++k){
+					n_k[k] += qz[j][i][k];
+					n_wk[w][k] += qz[j][i][k];
+					n_jk[j][k] += qz[j][i][k];
+				}
+			}
+		}
+
+		// update qz
+		for (int j = 0; j<M; ++j)
+		{
+			int N = x[j].size();
+			for (int i = 0; i<N; ++i)
+			{
+				int w = x[j][i];
+				double sum = 0.0;
+				vector<double> p(K);
+				for (int k = 0; k<K; ++k){
+					double &qz_jik = qz[j][i][k];
+					p[k] = (n_jk[j][k] - qz_jik + alpha_k) * (n_wk[w][k] - qz_jik + beta_w) / (n_k[k] - 1.0 + W * beta_w); // -1.0 == -\sum_k{qz[j][i][k]}
+					sum += p[k];
+				}
+				boost::transform(p, qz[j][i].begin(), [&sum](const double &p_k){
+					return p_k / sum;
+				});
 			}
 		}
 		cout << r << ":\t" << calc_perplexity() << "(" << timer.elapsed() << ")" << endl;

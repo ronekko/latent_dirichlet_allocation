@@ -10,13 +10,15 @@ private:
 	LDA(void);
 public:
 	enum Method{
-		CGS // collapsed Gibbs sampling
+		CGS, // collapsed Gibbs sampling
+		CVB0 // collapsed variational Bayes with 0th order approximation
 	};
 	
 	LDA(const int &K_, const double &alpha_total_mass_ = 1.0, const double &beta_total_mass_ = 20.0, int n_iter_ = 500, LDA::Method method_ = LDA::CGS, const int &seed = -1);
 	virtual ~LDA(void);
 	void fit(std::vector<std::unordered_map<int, int>> bows);
 	virtual void train_by_CGS(const int &iter);
+	void train_by_CVB0(const int &iter);
 	std::vector<std::vector<double>> calc_phi(void);
 	std::vector<std::vector<double>> calc_theta(void);
 	double calc_perplexity(void);
@@ -37,9 +39,9 @@ public:
 	Method method;
 	std::vector<std::vector<int>> x;	// x[j][i]: word type of i-th token in j-th document
 	std::vector<std::vector<int>> z;	// z[j][i]: latent topic assignment of i-th token in j-th document
-	std::vector<int> n_k;				// n_k[k] : counts of topic assignments to k-th topic
-	std::vector<std::vector<int>> n_jk; // n_jk[j][k]: counts of topic assignments to k-th topic in j-th document
-	std::vector<std::vector<int>> n_wk; // n_wk[w][k]: counts of word-type w's assigned to k-th topic
+	std::vector<double> n_k;				// n_k[k] : counts of topic assignments to k-th topic
+	std::vector<std::vector<double>> n_jk; // n_jk[j][k]: counts of topic assignments to k-th topic in j-th document
+	std::vector<std::vector<double>> n_wk; // n_wk[w][k]: counts of word-type w's assigned to k-th topic
 	boost::mt19937 rng;
 };
 
