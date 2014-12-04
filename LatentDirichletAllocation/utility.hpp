@@ -22,11 +22,47 @@ inline cv::Mat upsample(const cv::Mat &image, const int &scale)
 				int xx = x / scale;
 				int yy = y / scale;
 				int ww = w / scale;
-				result.data[(y * w + x) * channels + c] = image.data[(yy * ww + xx) * channels + c];
+				((float *)result.data)[(y * w + x) * channels + c] = ((float*)image.data)[(yy * ww + xx) * channels + c];
 			}
 		}
 	}
 	return result;
+}
+
+
+
+inline void show_topics(const string &title, const vector<vector<double>> &phi, const int &num_cols_per_row = 5)
+{
+	const int K = phi.size();
+	const int W = phi[0].size();
+	const int V = sqrt(W);
+	const int COLS = num_cols_per_row;
+	const int ROWS = ceil(double(K) / double(COLS));
+	const double scale = 10.0;
+	vector<cv::Mat> phi_images;
+	cv::Mat result(ROWS * (V * scale + 10), COLS * (V * scale + 10), CV_32FC1);
+
+	for (int k = 0; k<K; ++k){
+		cv::Mat phi_image(V, V, CV_32FC1);
+		for (int i = 0; i<V; ++i){
+			for (int j = 0; j<V; ++j){
+				phi_image.at<float>(i, j) = static_cast<float>(phi[k][i * V + j]);
+			}
+		}
+		cv::Mat phi_image_upsampled = upsample(phi_image, scale) * 5.0;
+		phi_images.push_back(phi_image_upsampled);
+	}
+
+	cv::randu(result, cv::Scalar(0.0), cv::Scalar(1.0));
+
+	for (int k = 0; k<K; ++k){
+		int row = k / COLS;
+		int col = k % COLS;
+		cv::Mat roi = result(cv::Rect(col * (V * scale + 10) + 5, row * (V * scale + 10) + 5, V * scale, V * scale));
+		phi_images[k].copyTo(roi);
+	}
+	cv::imshow(title, result);
+	cv::waitKey(1);
 }
 
 
