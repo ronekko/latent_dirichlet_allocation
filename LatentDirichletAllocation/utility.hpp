@@ -22,7 +22,7 @@ inline cv::Mat upsample(const cv::Mat &image, const int &scale)
 				int xx = x / scale;
 				int yy = y / scale;
 				int ww = w / scale;
-				result.data[(y * w + x) * channels + c] = image.data[(yy * ww + xx) * channels + c];
+				((float *)result.data)[(y * w + x) * channels + c] = ((float*)image.data)[(yy * ww + xx) * channels + c];
 			}
 		}
 	}
