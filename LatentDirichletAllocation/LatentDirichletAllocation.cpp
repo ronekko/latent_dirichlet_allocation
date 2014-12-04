@@ -83,6 +83,12 @@ void run_demo(const int &size=5)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+#define DEMO
+
+#ifdef DEMO
+	run_demo(5); // set size of the demo
+
+#else
 	const string file_bow = "NIPS0-12/counts0-12.txt";
 	const string file_vocabulary = "NIPS0-12/voca0-12.txt";
 	const string file_timestamp = "NIPS0-12/pclass0-12.txt";
@@ -95,7 +101,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	lda.fit(bows);
 	
 	lda.save_model("result_phi.txt", "result_theta.txt", 50, 10, file_vocabulary);
-
+#endif
 	return 0;
 }
 
