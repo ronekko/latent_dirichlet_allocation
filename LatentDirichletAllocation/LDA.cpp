@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <omp.h>
 #include "LDA.h"
 #include "utility.hpp"
 
@@ -169,6 +170,7 @@ void LDA::train_by_CVB0(const int &n_iter)
 		}
 
 		// update qz
+		#pragma omp parallel for
 		for (int j = 0; j < M; ++j)
 		{
 			int N = x[j].size();
