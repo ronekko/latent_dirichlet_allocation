@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <omp.h>
 #include "LDA.h"
 #include "utility.hpp"
 
@@ -159,16 +160,14 @@ void LDA::train_by_CVB0(const int &n_iter)
 			for (int i = 0; i < N_j; ++i)
 			{
 				int w = x[j][i];
-				for (int k = 0; k < K; ++k)
-				{
-					n_k[k] += qz[j][i][k];
-					n_wk[w][k] += qz[j][i][k];
-					n_jk[j][k] += qz[j][i][k];
-				}
+				boost::transform(n_k, qz[j][i], n_k.begin(), std::plus<double>()); // equivalent to n_k += qz[j][i]
+				boost::transform(n_wk[w], qz[j][i], n_wk[w].begin(), std::plus<double>()); // n_wk[w] += qz[j][i]
+				boost::transform(n_jk[j], qz[j][i], n_jk[j].begin(), std::plus<double>()); // n_jk[j] += qz[j][i]
 			}
 		}
 
 		// update qz
+		#pragma omp parallel for
 		for (int j = 0; j < M; ++j)
 		{
 			int N = x[j].size();
