@@ -108,6 +108,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	lda.save_model("result_phi.txt", "result_theta.txt", 50, 10, file_vocabulary);
 
+	lda.n_iter = 300;
+	auto theta_test = lda.transform(bows);
+	lda.save_model("result_test_phi.txt", "result_test_theta.txt", 20, 10, file_vocabulary);
+
 #endif
 	return 0;
 }
