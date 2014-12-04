@@ -28,6 +28,7 @@ void LDA::fit(vector<std::unordered_map<int, int>> bows)
 
 	// The "bow" object (counts of wordtypes) is converted into a sequence of word tokens (x_j object).
 	// For example, bow:{(0, 2), (1, 3), (3, 2)} -> x_j:{0, 0, 1, 1, 1, 3, 3}
+	x = vector<vector<int>>();
 	for (const auto &bow : bows)
 	{
 		int N_j = boost::accumulate(bow, 0, [](int sum, const pair<int, int> &type_to_count){
