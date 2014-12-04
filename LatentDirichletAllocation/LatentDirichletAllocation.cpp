@@ -83,7 +83,7 @@ void run_demo(const int &size=5)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-#define DEMO
+#define DEMO // comment out this line to run another demo which uses a real corpus
 
 #ifdef DEMO
 	run_demo(5); // set size of the demo
