@@ -93,14 +93,21 @@ int _tmain(int argc, _TCHAR* argv[])
 	const string file_vocabulary = "NIPS0-12/voca0-12.txt";
 	const string file_timestamp = "NIPS0-12/pclass0-12.txt";
 
-	//LDA lda(60, 1.0, 20.0, 300, LDA::Method::CGS, 0);
-	LDA lda(60, 1.0, 20.0, 100, LDA::Method::CVB0, 0);
+	const int K = 60;
+	const double alpha = 1.0;
+	const double beta = 20.0;
+	const int num_iter = 300;
+	const auto method = LDA::Method::CVB0;
+	const int seed = 0;
+
+	LDA lda(K, alpha, beta, num_iter, method, seed);
 	//TOT lda(file_bow, file_vocabulary, file_timestamp, 60, 0);
 
 	vector<std::unordered_map<int, int>> bows = LDA::load_bow_file(file_bow);
 	lda.fit(bows);
 	
 	lda.save_model("result_phi.txt", "result_theta.txt", 50, 10, file_vocabulary);
+
 #endif
 	return 0;
 }
