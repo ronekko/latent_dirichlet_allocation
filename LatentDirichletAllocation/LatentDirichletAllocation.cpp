@@ -93,6 +93,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	const string file_vocabulary = "NIPS0-12/voca0-12.txt";
 	const string file_timestamp = "NIPS0-12/pclass0-12.txt";
 
+	// split whole dataset into training and test data
+	const int test_size = 100;
+	vector<std::unordered_map<int, int>> bows = LDA::load_bow_file(file_bow);
+	vector<std::unordered_map<int, int>> bows_train(bows.begin(), bows.end() - test_size);
+	vector<std::unordered_map<int, int>> bows_test(bows.end() - test_size, bows.end());
+
 	const int K = 60;
 	const double alpha = 1.0;
 	const double beta = 20.0;
@@ -103,13 +109,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	LDA lda(K, alpha, beta, num_iter, method, seed);
 	//TOT lda(file_bow, file_vocabulary, file_timestamp, 60, 0);
 
-	vector<std::unordered_map<int, int>> bows = LDA::load_bow_file(file_bow);
-	lda.fit(bows);
-	
-	lda.save_model("result_phi.txt", "result_theta.txt", 50, 10, file_vocabulary);
+	lda.fit(bows_train);
+	lda.save_model("result_train_phi.txt", "result_train_theta.txt", 20, 10, file_vocabulary);
 
 	lda.n_iter = 300;
-	auto theta_test = lda.transform(bows);
+	auto theta_test = lda.transform(bows_test);
 	lda.save_model("result_test_phi.txt", "result_test_theta.txt", 20, 10, file_vocabulary);
 
 #endif
