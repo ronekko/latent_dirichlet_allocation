@@ -193,6 +193,88 @@ void LDA::train_by_CVB0(const int &n_iter)
 
 
 
+
+std::vector<std::vector<double>> LDA::transform(std::vector<std::unordered_map<int, int>> bows)
+{
+	M = bows.size();
+	vector<vector<double>> phi = calc_phi();
+	x = vector<vector<int>>();
+	// The "bow" object (counts of wordtypes) is converted into a sequence of word tokens (x_j object).
+	// For example, bow:{(0, 2), (1, 3), (3, 2)} -> x_j:{0, 0, 1, 1, 1, 3, 3}
+	for (const auto &bow : bows)
+	{
+		int N_j = boost::accumulate(bow, 0, [](int sum, const pair<int, int> &type_to_count){
+			return sum + type_to_count.first;
+		});
+		vector<int> x_j;
+		for (const auto &type_count : bow)
+		{
+			int word_type = type_count.first;
+			int word_count = type_count.second;
+			// word-type that is unseen during training is discarded
+			if (word_type < W)
+			{
+				for (int c = 0; c < word_count; ++c){
+					x_j.push_back(word_type);
+				}
+			}
+		}
+		boost::random_shuffle(x_j); // shuffle the ordering of tokens in j-th document
+		x.push_back(x_j);
+	}
+	N = 0;
+	for (auto &x_j : x){
+		N += x_j.size();
+	}
+
+	// initialize z and associated counts
+	vector<vector<int>> z = vector<vector<int>>(M);
+	n_jk = vector<vector<double>>(M, vector<double>(K, 0.0));
+	boost::uniform_int<> uint(0, K - 1);
+	for (int j = 0; j < M; ++j)
+	{
+		int N_j = x[j].size();
+		z[j] = vector<int>(N_j);
+		for (int i = 0; i < N_j; ++i)
+		{
+			int k = uint(rng);
+			z[j][i] = k;
+			n_jk[j][k]++;
+		}
+	}
+
+	// inference
+	for (int r = 0; r < n_iter; ++r)
+	{
+		boost::timer timer;
+		for (int j = 0; j < M; ++j)
+		{
+			int N_j = x[j].size();
+			for (int i = 0; i < N_j; ++i)
+			{
+				int w = x[j][i];
+				int k_old = z[j][i];
+
+				n_jk[j][k_old]--;
+
+				vector<double> p(K);
+				for (int k = 0; k < K; ++k){
+					p[k] = (n_jk[j][k] + alpha_k) * phi[k][w];
+				}
+				int k_new = util::multinomialByUnnormalizedParameters(rng, p);
+
+				z[j][i] = k_new;
+
+				n_jk[j][k_new]++;
+			}
+		}
+		cout << r << ":\t" << calc_perplexity() << "(" << timer.elapsed() << ")" << endl;
+	}
+
+	return calc_theta();
+}
+
+
 // phi[K][W]
 vector<vector<double>> LDA::calc_phi(void)
 {
