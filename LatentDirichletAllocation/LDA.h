@@ -18,6 +18,7 @@ public:
 	LDA(const int &K_, const double &alpha_total_mass_ = 1.0, const double &beta_total_mass_ = 20.0, int n_iter_ = 500, LDA::Method method_ = LDA::CGS, const int &seed = -1);
 	virtual ~LDA(void);
 	void fit(std::vector<std::unordered_map<int, int>> bows);
+	std::vector<std::vector<double>> transform(std::vector<std::unordered_map<int, int>> bows);
 	virtual void train_by_CGS(const int &iter);
 	void train_by_CVB0(const int &iter);
 	std::vector<std::vector<double>> calc_phi(void);
